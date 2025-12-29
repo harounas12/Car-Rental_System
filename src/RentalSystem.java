@@ -55,7 +55,7 @@ public class RentalSystem {
 	private void displayMenu() {
         System.out.println("\n----- CAR RENTAL SYSTEM -----");
         System.out.println("1. View Available Cars");
-        System.out.println("2. Rent a Car");
+        System.out.println("2. Rent a Car (Daily or Hourly)");
         System.out.println("3. Return a Car");
         System.out.println("4. Show Rental History");
         System.out.println("5. Exit");
@@ -67,7 +67,7 @@ public class RentalSystem {
 		}else {
 			System.out.println("\n--- Available Inventory ---");
 			for(Car car: available) {
-				System.out.println("[" + car.getid() + "] " + car.brand + " " + car.model + " ($" + car.isAvailable() + ")");
+				System.out.println("[" + car.getid() + "] " + car.brand + " " + car.model  );
 				
             }
 			}
@@ -78,14 +78,20 @@ public class RentalSystem {
         Car selected = inventory.getCarbyId(id);
 
         if (selected != null) {
+        	System.out.println("Select Rental type:");
+        	System.out.println("1. Daily Rental");
+        	System.out.println("2. Hourly Rental");
+        	int typechoice = getIntInput("Choice: ");
+        	boolean isHourly = (typechoice == 2);
+        	String unitlabel = isHourly ? "Hours" : "Days";
             System.out.print("Customer Name: ");
             String name = scanner.nextLine();
             int idNum = getIntInput("Customer ID: ");
-            int days = getIntInput("Rental Duration (Days): ");
+            int duration = getIntInput("Enter Rental duration in " + unitlabel + ": ");
 
             try {
                 Customer customer = new Customer(name,idNum);
-                Rental rental = new Rental(selected, customer, days);
+                Rental rental = new Rental(selected, customer, duration, isHourly);
                 selected.markUnavailable();
                 inventory.addRental(rental);
                 csvHandler.saveCars(inventory.getAvailableCars());
@@ -107,16 +113,21 @@ public class RentalSystem {
         
         
         if(rental!=null) {
-        	int late = getIntInput("Enter late return day: ");
-        	rental.returnCar(late);
-        	rental.getCar().markAvailable();
-        	Payment payment = new Payment(rental.getTotalFee());
-        	payment.payment();
-        	
-        	inventory.completeRental(rental);
-        	csvHandler.saveCars(inventory.getAvailableCars());
-        	System.out.println("Succes! car: " +id+ " "+"is back in inventory.");
-        	System.out.println("Final Details: " + rental);
+        	boolean isHourly = rental.isHourly();
+        	String unitlabel = isHourly ? "Hours" : "Days";
+        	System.out.println("Enter number of late "+ unitlabel + "(0 if none): ");
+        	int lateUnits = getIntInput("");
+        	try {
+        		rental.returnCar(lateUnits);
+        		csvHandler.saveCars(inventory.getAvailableCars());
+        		System.out.println("Succes! car: " +id+ " "+"is back in inventory.");
+            	System.out.println("Final Details: " + rental);
+            	inventory.completeRental(rental);
+        	}catch(Exception e){
+        		System.out.println("Error during return: "+e.getMessage());
+        		
+        	}
+     
         }else {
         	System.out.println("Error No active rental found for for Car ID: " + id);
         }

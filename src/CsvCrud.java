@@ -10,7 +10,7 @@ public class CsvCrud {
         this.filePath = filePath;
     }
 
-    // CREATE / UPDATE: Save the entire list of cars to CSV
+   
     public void saveCars(List<Car> cars) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
             writer.println(CSV_HEADER);
@@ -20,8 +20,8 @@ public class CsvCrud {
                                     ((ElectricCar) car).getBatteryLife() : 
                                     ((GasCar) car).getEnginesize();
                 
-                writer.printf("%s,%s,%s,%s,%.2f,%d%n", 
-                    type, car.brand, car.model, car.getid(), car.baseRate, specificValue,car.isAvailable());
+                writer.printf("", 
+                    type, car.brand, car.model, car.getid(), car.baseRate, specificValue,car.isAvailable(),car.isHourly());
             }
         } catch (IOException e) {
             System.err.println("Error saving to CSV: " + e.getMessage());
@@ -39,7 +39,7 @@ public class CsvCrud {
 
             while ((line = reader.readLine()) != null) {
                 String[] data = line.split(",");
-                if (data.length < 7) continue; 
+                if (data.length < 8) continue; 
 
                 String type = data[0];
                 String brand = data[1];
@@ -47,14 +47,24 @@ public class CsvCrud {
                 String id = data[3];
                 double rate = Double.parseDouble(data[4]);
                 int specificVal = Integer.parseInt(data[5]);
-                boolean isAvailable = Boolean.parseBoolean(data[7]);
+                boolean isAvailable = Boolean.parseBoolean(data[6]);
+                boolean isHourlyMode = Boolean.parseBoolean(data[7]);
+               
+               
 
-                Car car; 
+                Car car = null; 
+                if(isHourlyMode) {
+                	car.setHourly(true);
+                }else {
+                	car.setHourly(false);
+                }
+                
                 if (type.equalsIgnoreCase("Electric")) {
                     car = new ElectricCar(brand, model, id, rate, specificVal);
                 } else {
                     car = new GasCar(brand, model, id, rate, specificVal);
                 }
+                car.setHourly(isHourlyMode);
 
                 if (isAvailable) {
                     car.markAvailable();
@@ -67,8 +77,12 @@ public class CsvCrud {
         } 
         catch (IOException e) {
             System.err.println("Error loading CSV: " + e.getMessage());
-        } 
+            
+        }
+       
+    
+           return loadedCars;
         
-        return loadedCars;
+        
     }
     } 

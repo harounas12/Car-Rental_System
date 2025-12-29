@@ -28,8 +28,8 @@ public class CarInventory {
 		}
 		return available;
 	}
-	public void processRental(Car car, Customer customer, int days) {
-		Rental rental = new Rental(car, customer, days);
+	public void processRental(Car car, Customer customer, int duration,boolean isHourly) {
+		Rental rental = new Rental(car, customer, duration,isHourly);
 		rentals.add(rental);
 	}
 	public Rental findActiveRental(String id) {
